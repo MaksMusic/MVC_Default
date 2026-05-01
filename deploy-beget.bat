@@ -20,27 +20,25 @@ if errorlevel 1 (
     exit /b 1
 )
 
+if not exist .env (
+    echo ERROR: .env file not found in project root.
+    echo Create .env, copy values from .env.example, then run deploy again.
+    exit /b 1
+)
+
 echo.
 echo Copying files to server...
-scp docker-compose.yml Dockerfile build\libs\*.jar %SSH_USER%@%SERVER_IP%:%REMOTE_PATH%/
+REM Copying docker-compose, Dockerfile, JARs AND .env file
+scp docker-compose.yml Dockerfile build\libs\*.jar .env %SSH_USER%@%SERVER_IP%:%REMOTE_PATH%/
 if errorlevel 1 (
     echo SCP error while copying files. Stopping.
     exit /b 1
 )
 
-
 echo.
 echo Starting docker compose on server...
+REM Using --env-file .env explicitly to ensure variables are loaded
 ssh %SSH_USER%@%SERVER_IP% "cd %REMOTE_PATH% && docker compose -p mvc_default --env-file .env up -d --build"
-if errorlevel 1 (
-    echo Error starting docker compose on server.
-    exit /b 1
-)
-
-
-echo.
-echo Starting docker compose on server...
-ssh %SSH_USER%@%SERVER_IP% "cd %REMOTE_PATH% && docker compose up -d --build"
 if errorlevel 1 (
     echo Error starting docker compose on server.
     exit /b 1
@@ -48,3 +46,4 @@ if errorlevel 1 (
 
 echo.
 echo Done. Application should be running in Docker on the server.
+pause
