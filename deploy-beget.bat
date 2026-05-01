@@ -28,6 +28,16 @@ if errorlevel 1 (
     exit /b 1
 )
 
+
+echo.
+echo Starting docker compose on server...
+ssh %SSH_USER%@%SERVER_IP% "cd %REMOTE_PATH% && docker compose -p mvc_default --env-file .env up -d --build"
+if errorlevel 1 (
+    echo Error starting docker compose on server.
+    exit /b 1
+)
+
+
 echo.
 echo Starting docker compose on server...
 ssh %SSH_USER%@%SERVER_IP% "cd %REMOTE_PATH% && docker compose up -d --build"
